@@ -6,6 +6,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@jubbio/core": "latest"
+    "@jubbio/core": "latest",
+    "dotenv": "^16.4.5"
   }
 }
