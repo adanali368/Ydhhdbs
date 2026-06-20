@@ -1,11 +1,13 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('@jubbio/core');
 
+// Çift güvence: Hem iç ayara hem de doğrudan login'e tokeni bağlıyoruz
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent
-    ]
+    ],
+    token: process.env.BOT_TOKEN // Bazı core altyapıları tokeni burada bekler
 });
 
 // Jubbio uygulamasının aktiflik kontrolü
@@ -15,10 +17,8 @@ client.once('ready', () => {
 
 // Mesaj kontrolleri (Sa-As Sistemi)
 client.on('messageCreate', async (message) => {
-    // Botun kendi mesajlarına cevap vermesini engeller
     if (message.author.bot) return;
 
-    // Gelen mesajı küçük harfe çevirip boşlukları temizler (Sa, SA, sA fark etmez)
     const msg = message.content.toLowerCase().trim();
 
     // --- SA-AS SİSTEMİ ---
@@ -39,5 +39,10 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// Botu BOT_TOKEN ortam değişkeni ile başlatır
-client.login(process.env.BOT_TOKEN);
+// Eğer token hala boş algılanıyorsa kodu çökertmeden önce log detayını görmek için kontrol ekledik
+const token = process.env.BOT_TOKEN;
+if (!token) {
+    console.error("[HATA] Render ortam değişkenlerinden 'BOT_TOKEN' okunamadı! Lütfen Environment panelini kontrol edin.");
+}
+
+client.login(token);
