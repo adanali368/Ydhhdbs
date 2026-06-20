@@ -1,9 +1,7 @@
-import { Client } from '@jubbio/core';
-import dotenv from 'dotenv';
+const { Client } = require('@jubbio/core');
+require('dotenv').config();
 
-// .env dosyasındaki değişkenleri yükle
-dotenv.config();
-
+// Client nesnesini başlat (Jubbio altyapısı için gerekli intentler)
 const client = new Client({
     intents: ['Guilds', 'GuildMessages', 'MessageContent']
 });
@@ -11,7 +9,7 @@ const client = new Client({
 // Her 10 mesajda bir tetiklenmesi için sayaç
 let messageCounter = 0;
 
-// Geniş kapsamlı selamlaşma listesi (Küçük harfe duyarlı kontrol için hepsi küçük harf)
+// Geniş kapsamlı selamlaşma listesi (Küçük harfle kontrol için hepsi küçük harf)
 const greetings = [
     'sa', 'as', 'selam', 'selamlar', 'slm', 'merhaba', 'merhabalar', 
     's.a.', 'a.s.', 'sea', 'ase', 'selamun aleykum', 'selamün aleyküm', 
@@ -19,18 +17,17 @@ const greetings = [
 ];
 
 client.on('ready', () => {
-    console.log(`${client.user.username} olarak giriş yapıldı! Bot aktif.`);
+    console.log(`${client.user.username} aktif ve görevine hazır!`);
 });
 
 client.on('messageCreate', async (message) => {
-    // Botların kendi mesajlarını veya sistem mesajlarını görmezden gel
+    // Botların kendi mesajlarını veya boş mesajları görmezden gel
     if (message.author.bot || !message.content) return;
 
     const contentLower = message.content.trim().toLowerCase();
 
-    // 1. Selamlaşma Sistemi (Gelen mesaj selam listesindeyse cevap verir)
+    // 1. Selamlaşma Sistemi
     if (greetings.includes(contentLower)) {
-        // Eğer kullanıcı doğrudan selam verdiyse ona uygun bir karşılık seçelim
         if (['sa', 's.a.', 'sea', 'selamun aleykum', 'selamün aleyküm'].includes(contentLower)) {
             await message.reply('Aleyküm Selam, hoş geldin!');
         } else if (['as', 'a.s.', 'ase', 'aleykum selam', 'aleyküm selam'].includes(contentLower)) {
@@ -49,5 +46,5 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// .env içindeki BOT_TOKEN ile botu başlatır
+// .env içindeki BOT_TOKEN ile giriş yap
 client.login(process.env.BOT_TOKEN);
