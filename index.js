@@ -1,43 +1,53 @@
-const { Client } = require('@jubbio/core');
+import { Client } from '@jubbio/core';
+import dotenv from 'dotenv';
 
-// Jubbio bot istemcisini başlatıyoruz
-const client = new Client();
+// .env dosyasındaki değişkenleri yükle
+dotenv.config();
+
+const client = new Client({
+    intents: ['Guilds', 'GuildMessages', 'MessageContent']
+});
+
+// Her 10 mesajda bir tetiklenmesi için sayaç
+let messageCounter = 0;
+
+// Geniş kapsamlı selamlaşma listesi (Küçük harfe duyarlı kontrol için hepsi küçük harf)
+const greetings = [
+    'sa', 'as', 'selam', 'selamlar', 'slm', 'merhaba', 'merhabalar', 
+    's.a.', 'a.s.', 'sea', 'ase', 'selamun aleykum', 'selamün aleyküm', 
+    'aleykum selam', 'aleyküm selam', 'mrb', 'sh'
+];
 
 client.on('ready', () => {
-    console.log(`${client.user.username} aktif ve selamları almaya hazır!`);
+    console.log(`${client.user.username} olarak giriş yapıldı! Bot aktif.`);
 });
 
 client.on('messageCreate', async (message) => {
-    // Botların kendi mesajlarına veya diğer botlara cevap vermesini engelleyelim
-    if (message.author.bot) return;
+    // Botların kendi mesajlarını veya sistem mesajlarını görmezden gel
+    if (message.author.bot || !message.content) return;
 
-    // Mesajı küçük harfe çevirip sağındaki solundaki boşlukları temizleyelim
-    const msg = message.content.toLowerCase().trim();
+    const contentLower = message.content.trim().toLowerCase();
 
-    // Algılanmasını istediğin tüm selamlaşma varyasyonları
-    const selamlar = [
-        'sa', 
-        'selam', 
-        'selamun aleyküm', 
-        'selamün aleyküm', 
-        'selâm', 
-        'merhaba', 
-        'mrb', 
-        'slm', 
-        'hey',
-        'sea'
-    ];
-
-    // Eğer yazılan mesaj selam listemizde varsa
-    if (selamlar.includes(msg)) {
-        // Dini selamlaşmalar için Aleyküm Selam, diğerleri için Merhaba/Selam cevabı
-        if (msg === 'sa' || msg === 'selamun aleyküm' || msg === 'selamün aleyküm' || msg === 'sea') {
-            await message.reply('**Aleyküm Selam, hoş geldin!**');
+    // 1. Selamlaşma Sistemi (Gelen mesaj selam listesindeyse cevap verir)
+    if (greetings.includes(contentLower)) {
+        // Eğer kullanıcı doğrudan selam verdiyse ona uygun bir karşılık seçelim
+        if (['sa', 's.a.', 'sea', 'selamun aleykum', 'selamün aleyküm'].includes(contentLower)) {
+            await message.reply('Aleyküm Selam, hoş geldin!');
+        } else if (['as', 'a.s.', 'ase', 'aleykum selam', 'aleyküm selam'].includes(contentLower)) {
+            await message.reply('Selamlar, nasılsın?');
         } else {
-            await message.reply('**Merhaba, hoş geldin!**');
+            await message.reply('Selam! Merhaba, hoş geldin.');
         }
+    }
+
+    // 2. Her 10 Mesajda 1 Kural Hatırlatma Sistemi
+    messageCounter++;
+    
+    if (messageCounter >= 10) {
+        await message.channel.send('**Lütfen kurallara uyalım**');
+        messageCounter = 0; // Sayacı sıfırla
     }
 });
 
-// Jubbio panelindeki config veya env üzerinden tokenı otomatik çeker
-client.login();
+// .env içindeki BOT_TOKEN ile botu başlatır
+client.login(process.env.BOT_TOKEN);
